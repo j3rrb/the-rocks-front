@@ -6,11 +6,18 @@ import {
     LineElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    ChartData
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { faker } from '@faker-js/faker';
 import { Box, Card } from '@mui/material'
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useMemo } from "react";
+import { listSensorData } from "../../services";
+import { pushData, setData, setLabels } from "../../redux/slices/chart";
+import { RootState } from "../../redux/store";
+import { io } from "socket.io-client";
+import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
 
 ChartJS.register(
     CategoryScale,
@@ -21,8 +28,6 @@ ChartJS.register(
     Tooltip,
     Legend
 );
-
-const labels = Array.from({ length: 160 }).map((_, i) => `${i}:${i}`);
 
 const options = {
     responsive: true,
@@ -37,24 +42,43 @@ const options = {
     },
 };
 
-const data = {
-    labels,
-    datasets: [
-        {
-            label: 'Velocidade em m/s',
-            data: labels.map(() => faker.number.int({ min: 1, max: 10 })),
-            borderColor: '#FF5C00',
-            backgroundColor: 'rgb(255, 99, 132, 0.5)',
-        },
-    ],
-};
-
-
 const MonitoringChart = () => {
+    const dispatch = useDispatch()
+    useWebSocket('ws://localhost:3100', {
+        onOpen: (event) => { console.log(event) },
+        onMessage(event) {
+            console.log(event);
+        },
+    })
+    const { data, labels } = useSelector((state: RootState) => state.chart)
+
+    useEffect(() => {
+        listSensorData('USIPAV', 1).then(([labels, values]) => {
+            dispatch(setLabels(labels));
+            dispatch(setData(values))
+        })
+    }, [])
+
+    const chartData: ChartData<"line", Record<string, any> | Record<string, any>[], string> = useMemo(() => ({
+        labels,
+        datasets: [
+            {
+                label: 'Velocidade em m/s',
+                data,
+                borderColor: '#FF5C00',
+                backgroundColor: 'black',
+                borderWidth: 2,
+                pointBorderColor: 'white',
+                pointBorderWidth: 1,
+
+            },
+        ],
+    }), [])
+
     return (
         <Box marginY={3}>
             <Card elevation={5} sx={{ padding: 2 }}>
-                <Line options={options} data={data} />
+                <Line options={options} data={chartData} />
             </Card>
         </Box>
     )
