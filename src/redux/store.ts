@@ -1,13 +1,15 @@
-import { configureStore } from '@reduxjs/toolkit'
-import drawer from './slices/drawer'
-import chart from './slices/chart'
+import { configureStore } from "@reduxjs/toolkit";
+import drawer from "./slices/drawer";
+import { chartAPI } from "./apis/chart";
 
 export const store = configureStore({
   reducer: {
     drawer,
-    chart
+    [chartAPI.reducerPath]: chartAPI.reducer,
   },
-})
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(chartAPI.middleware),
+});
 
-export type RootState = ReturnType<typeof store.getState>
-export type AppDispatch = typeof store.dispatch
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

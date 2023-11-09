@@ -1,25 +1,15 @@
-import { RouteObject } from "react-router"
-import App from "./App"
+import { RouteObject, Navigate } from "react-router";
+import { Dashboard } from "./pages";
 
 const routes: RouteObject[] = [
-    {
-        path: '/',
-        Component: App,
-        children: [
-            {
-                path: 'alerts',
-                element: 'alerts'
-            },
-            {
-                path: 'settings',
-                element: 'settings'
-            },
-            {
-                path: 'logs',
-                element: 'logs'
-            }
-        ]
-    }
-]
+  {
+    path: "/",
+    Component: Dashboard,
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
+  },
+];
 
-export default routes
+export default routes;
