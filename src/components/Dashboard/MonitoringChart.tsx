@@ -50,17 +50,23 @@ const MonitoringChart = () => {
     const ws = io("ws://localhost:3100");
 
     ws.on("USIPAV", (message) => {
-      setChartData((prev) => {
-        prev.shift();
-        return prev;
-      });
-      setChartData((prev) => [...prev, message.Value]);
+      if (!Array.isArray(message)) {
+        message = [message];
+      }
 
-      setChartLabels((prev) => {
-        prev.shift();
-        return prev;
+      message.forEach((item: Record<string, any>) => {
+        setChartData((prev) => {
+          prev.shift();
+          return prev;
+        });
+        setChartData((prev) => [...prev, item.Value]);
+
+        setChartLabels((prev) => {
+          prev.shift();
+          return prev;
+        });
+        setChartLabels((prev) => [...prev, item.timestamp.split(" ")[1]]);
       });
-      setChartLabels((prev) => [...prev, message.timestamp.split(" ")[1]]);
     });
 
     return () => {
@@ -101,11 +107,7 @@ const MonitoringChart = () => {
     <Box marginY={3}>
       <Card elevation={5} sx={{ padding: 2 }}>
         {!isLoading && !data ? (
-          <Box
-            alignItems="center"
-            justifyContent="center"
-            display="flex"
-          >
+          <Box alignItems="center" justifyContent="center" display="flex">
             <CircularProgress />
           </Box>
         ) : (
