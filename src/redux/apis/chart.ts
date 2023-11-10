@@ -6,9 +6,9 @@ export const chartAPI = createApi({
   endpoints: (builder) => ({
     getXDaysChartData: builder.query<
       Record<string, any>[],
-      { companyId: string; days: number }
+      { companyId: string; days?: number }
     >({
-      query: ({ companyId, days }) => `/sensor/${companyId}?days=${days}`,
+      query: ({ companyId, days }) => `/sensor/${companyId}${days ? `?days=${days}` : ''}`,
     }),
   }),
 });

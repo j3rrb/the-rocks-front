@@ -14,6 +14,7 @@ import { Box, Card, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { useGetXDaysChartDataQuery } from "../../redux/apis/chart";
+import { format } from 'date-fns'
 
 ChartJS.register(
   CategoryScale,
@@ -39,7 +40,7 @@ const options = {
 };
 
 const MonitoringChart = () => {
-  const { data, isLoading } = useGetXDaysChartDataQuery({
+  const { data, isLoading, error } = useGetXDaysChartDataQuery({
     companyId: "USIPAV",
     days: 1,
   });
@@ -54,7 +55,7 @@ const MonitoringChart = () => {
         message = [message];
       }
 
-      message.forEach((item: Record<string, any>) => {
+      message.filter((x: any) => x.SensorId === 'S15').forEach((item: Record<string, any>) => {
         setChartData((prev) => {
           prev.shift();
           return prev;
@@ -65,7 +66,7 @@ const MonitoringChart = () => {
           prev.shift();
           return prev;
         });
-        setChartLabels((prev) => [...prev, item.timestamp.split(" ")[1]]);
+        setChartLabels((prev) => [...prev, format(new Date(item.timestamp.replace(' ', 'T')), 'dd/M/yyyy hh:mm:ss')]);
       });
     });
 
@@ -75,9 +76,11 @@ const MonitoringChart = () => {
   }, []);
 
   useEffect(() => {
+    console.log(data, isLoading, error);
+
     if (data && !isLoading) {
-      const labels = data.map(({ timestamp }: any) => timestamp.split(" ")[1]);
-      const values = data.map(({ Value }: any) => Value);
+      const labels = data.filter((x: any) => x.SensorId === 'S15').map(({ timestamp }: any) => format(new Date(timestamp.replace(' ', 'T')), 'dd/M/yyyy hh:mm:ss'));
+      const values = data.filter((x: any) => x.SensorId === 'S15').map(({ Value }: any) => Value);
 
       setChartData(values);
       setChartLabels(labels);
@@ -106,7 +109,7 @@ const MonitoringChart = () => {
   return (
     <Box marginY={3}>
       <Card elevation={5} sx={{ padding: 2 }}>
-        {!isLoading && !data ? (
+        {isLoading && !data ? (
           <Box alignItems="center" justifyContent="center" display="flex">
             <CircularProgress />
           </Box>
