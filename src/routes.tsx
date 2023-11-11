@@ -1,11 +1,12 @@
 import { RouteObject, Navigate } from "react-router";
-import { Dashboard } from "./pages";
+import { Dashboard, Login } from "./pages";
 
 const routes: RouteObject[] = [
   {
     path: "/",
     Component: Dashboard,
   },
+  { path: '/login', Component: Login },
   {
     path: "*",
     element: <Navigate to="/" replace />,

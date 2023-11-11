@@ -15,6 +15,8 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { useGetXDaysChartDataQuery } from "../../redux/apis/chart";
 import { format } from 'date-fns'
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 ChartJS.register(
   CategoryScale,
@@ -40,15 +42,15 @@ const options = {
 };
 
 const MonitoringChart = () => {
-  const { data, isLoading, error } = useGetXDaysChartDataQuery({
-    companyId: "USIPAV",
-    days: 1,
+  const { company } = useSelector((state: RootState) => state.authSlice)
+  const { data, isLoading } = useGetXDaysChartDataQuery({
+    companyId: company!,
   });
   const [chartData, setChartData] = useState<Record<string, any>[]>([]);
   const [chartLabels, setChartLabels] = useState<string[]>([]);
 
   useEffect(() => {
-    const ws = io("ws://localhost:3100");
+    const ws = io(import.meta.env.VITE_SOCKET_URL);
 
     ws.on("USIPAV", (message) => {
       if (!Array.isArray(message)) {
@@ -76,8 +78,6 @@ const MonitoringChart = () => {
   }, []);
 
   useEffect(() => {
-    console.log(data, isLoading, error);
-
     if (data && !isLoading) {
       const labels = data.filter((x: any) => x.SensorId === 'S15').map(({ timestamp }: any) => format(new Date(timestamp.replace(' ', 'T')), 'dd/M/yyyy hh:mm:ss'));
       const values = data.filter((x: any) => x.SensorId === 'S15').map(({ Value }: any) => Value);

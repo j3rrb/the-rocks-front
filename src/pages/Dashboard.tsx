@@ -1,7 +1,8 @@
 import MonitoringChart from "../components/Dashboard/MonitoringChart"
+import { withAuth } from "../hocs"
 
-const Dashboard: React.FC = () => {
+function Dashboard(): JSX.Element {
     return <MonitoringChart />
 }
 
-export default Dashboard
+export default withAuth(Dashboard)
